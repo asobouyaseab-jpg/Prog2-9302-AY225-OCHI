@@ -1,0 +1,90 @@
+/* Programmer Identifier: Nobutoshi [24-1786-978] */
+
+/* 全体の基本設定 */
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f9f9f9;
+}
+
+/* 見出し */
+h1 {
+  text-align: center;
+  color: #2c3e50;
+}
+
+/* テーブル */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #fff;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+th {
+  background-color: #34495e;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+tr:hover {
+  background-color: #dff9fb;
+}
+
+/* 入力フォーム */
+form {
+  margin-top: 20px;
+  text-align: center;
+}
+
+input {
+  margin: 5px;
+  padding: 5px;
+}
+
+/* ボタン */
+button {
+  padding: 6px 12px;
+  cursor: pointer;
+  border: 2px solid #333;   /* 枠線を追加 */
+  border-radius: 4px;       /* 角を少し丸める */
+  font-weight: bold;        /* 文字を太字にして強調 */
+}
+
+/* Addボタン */
+button.add {
+  background-color: #27ae60;
+  color: white;
+  border: 2px solid #1e8449; /* 緑系の枠線 */
+}
+
+/* Deleteボタン */
+button.delete {
+  background-color: #e74c3c;
+  color: white;
+  border: 2px solid #c0392b; /* 赤系の枠線 */
+}
+
+/* ホバー時の効果 */
+button:hover {
+  opacity: 0.85;
+  transform: scale(1.05);   /* 少し大きくなる */
+}
+
+
+/* フッター */
+footer {
+  margin-top: 30px;
+  text-align: center;
+  font-style: italic;
+  color: #7f8c8d;
+}
