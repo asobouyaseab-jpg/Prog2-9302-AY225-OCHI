@@ -67,4 +67,8 @@ public class StudentRecordSystem extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new StudentRecordSystem().setVisible(true));
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> adb71b09c10cf060179503bd37fe3cbb9774f921
