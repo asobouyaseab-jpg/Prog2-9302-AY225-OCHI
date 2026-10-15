@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Side Scroll Brawler</title>
+    <style>
+        body { margin: 0; background: #000; font-family: Arial, sans-serif; }
+        canvas { display: block; margin: 0 auto; image-rendering: pixelated; }
+        #ui { position: absolute; top: 10px; left: 10px; color: white; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    
+    <div id="ui">
+        <div>HP: <span id="hp">100</span></div>
+        <div>Score: <span id="score">0</span></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // ====================== ゲーム状態 ======================
+        let gameState = "menu"; // "menu", "playing", "gameover"
+        let score = 0;
+
+        // ====================== 入力処理 ======================
+        const keys = {};
+        document.addEventListener("keydown", e => {
+            keys[e.key] = true;
+            
+            if (gameState === "menu" && (e.key === " " || e.key === "Enter")) {
+                startGame();
+            }
+            if (gameState === "gameover" && (e.key === " " || e.key === "Enter")) {
+                resetGame();
+            }
+        });
+        document.addEventListener("keyup", e => keys[e.key] = false);
+
+        // ====================== Player Class ======================
+        class Player {
+            constructor(x, y, spriteSheet) {
+                this.x = x;
+                this.y = y;
+                this.width = 50;
+                this.height = 80;
+                this.hp = 100;
+                this.maxHp = 100;
+                this.speed = 5;
+                this.facingRight = true;
+                this.state = "idle"; // idle, run, attack
+                this.comboStep = 0;
+                this.attackCooldown = false;
+                this.spriteSheet = spriteSheet;
+                this.frameWidth = 64;
+                this.frameHeight = 64;
+                this.currentFrame = 0;
+                this.frameCount = 0;
+                this.invulnerable = 0; // 無敵時間
+            }
+
+            update(enemies) {
+                if (this.invulnerable > 0) this.invulnerable--;
+
+                // 移動
+                let moving = false;
+                if (keys["ArrowRight"]) {
+                    this.x += this.speed;
+                    this.facingRight = true;
+                    this.state = "run";
+                    moving = true;
+                } else if (keys["ArrowLeft"]) {
+                    this.x -= this.speed;
+                    this.facingRight = false;
+                    this.state = "run";
+                    moving = true;
+                }
+
+                if (!moving && this.state !== "attack") {
+                    this.state = "idle";
+                }
+
+                // 攻撃（スペースキー）
+                if (keys[" "] && !this.attackCooldown) {
+                    this.attack(enemies);
+                }
+
+                // アニメーション
+                this.frameCount++;
+                if (this.frameCount % 8 === 0) {
+                    this.currentFrame = (this.currentFrame + 1) % this.getMaxFrames();
+                }
+
+                // 画面端の制限
+                if (this.x < 0) this.x = 0;
+                if (this.x > canvas.width - this.width) this.x = canvas.width - this.width;
+            }
+
+            attack(enemies) {
+                this.state = "attack";
+                this.comboStep = (this.comboStep + 1) % 3;
+                this.attackCooldown = true;
+
+                const hitbox = {
+                    x: this.facingRight ? this.x + this.width : this.x - 40,
+                    y: this.y,
+                    width: 50,
+                    height: this.height
+                };
+
+                enemies.forEach(enemy => {
+                    if (this.checkCollision(hitbox, enemy)) {
+                        enemy.takeDamage(20);
+                    }
+                });
+
+                setTimeout(() => {
+                    this.attackCooldown = false;
+                    if (this.state === "attack") this.state = "idle";
+                }, 250);
+            }
+
+            takeDamage(amount) {
+                if (this.invulnerable > 0) return;
+                this.hp -= amount;
+                this.invulnerable = 30; // 0.5秒無敵
+
+                if (this.hp <= 0) {
+                    this.hp = 0;
+                    gameState = "gameover";
+                }
+            }
+
+            getMaxFrames() {
+                switch (this.state) {
+                    case "idle": return 4;
+                    case "run": return 6;
+                    case "attack": return 5;
+                    default: return 1;
+                }
+            }
+
+            checkCollision(a, b) {
+                return (
+                    a.x < b.x + b.width &&
+                    a.x + a.width > b.x &&
+                    a.y < b.y + b.height &&
+                    a.y + a.height > b.y
+                );
+            }
+
+            draw() {
+                if (!this.spriteSheet) {
+                    // スプライトがない場合は仮の描画
+                    ctx.fillStyle = this.invulnerable > 0 ? "#88ffff" : "#00aaff";
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    return;
+                }
+
+                let row = 0;
+                if (this.state === "run") row = 1;
+                if (this.state === "attack") row = 2;
+
+                ctx.save();
+                if (!this.facingRight) {
+                    ctx.translate(this.x + this.width, this.y);
+                    ctx.scale(-1, 1);
+                    ctx.drawImage(
+                        this.spriteSheet,
+                        this.currentFrame * this.frameWidth,
+                        row * this.frameHeight,
+                        this.frameWidth,
+                        this.frameHeight,
+                        0, 0, this.width, this.height
+                    );
+                } else {
+                    ctx.drawImage(
+                        this.spriteSheet,
+                        this.currentFrame * this.frameWidth,
+                        row * this.frameHeight,
+                        this.frameWidth,
+                        this.frameHeight,
+                        this.x, this.y, this.width, this.height
+                    );
+                }
+                ctx.restore();
+            }
+        }
+
+        // ====================== Enemy Class ======================
+        class Enemy {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 50;
+                this.height = 80;
+                this.hp = 50;
+                this.speed = 1.5;
+            }
+
+            update(player) {
+                // プレイヤーに向かってゆっくり近づく
+                if (this.x > player.x + 60) {
+                    this.x -= this.speed;
+                } else if (this.x < player.x - 60) {
+                    this.x += this.speed;
+                }
+            }
+
+            takeDamage(amount) {
+                this.hp -= amount;
+            }
+
+            isDead() {
+                return this.hp <= 0;
+            }
+
+            draw() {
+                ctx.fillStyle = "#ff4444";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                
+                // 簡易HPバー
+                const barWidth = this.width * (this.hp / 50);
+                ctx.fillStyle = "#ff0000";
+                ctx.fillRect(this.x, this.y - 10, barWidth, 6);
+            }
+        }
+
+        // ====================== ゲームオブジェクト ======================
+        let player;
+        let enemies = [];
+        let playerSprite = new Image();
+
+        function initGame() {
+            player = new Player(100, 250, playerSprite);
+            enemies = [
+                new Enemy(500, 250),
+                new Enemy(700, 250)
+            ];
+            score = 0;
+        }
+
+        function startGame() {
+            gameState = "playing";
+            initGame();
+        }
+
+        function resetGame() {
+            gameState = "menu";
+        }
+
+        function updateUI() {
+            document.getElementById("hp").textContent = player ? Math.max(0, player.hp) : 100;
+            document.getElementById("score").textContent = score;
+        }
+
+        // ====================== メインゲームループ ======================
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (gameState === "playing") {
+                player.update(enemies);
+
+                // 敵の更新と削除
+                for (let i = enemies.length - 1; i >= 0; i--) {
+                    enemies[i].update(player);
+                    if (enemies[i].isDead()) {
+                        enemies.splice(i, 1);
+                        score += 100;
+                    }
+                }
+
+                // 敵の再出現（簡易）
+                if (enemies.length < 2) {
+                    enemies.push(new Enemy(canvas.width + 50, 250));
+                }
+
+                // 描画
+                player.draw();
+                enemies.forEach(enemy => enemy.draw());
+
+                // 衝突判定（敵とプレイヤー）
+                enemies.forEach(enemy => {
+                    if (player.checkCollision(player, enemy)) {
+                        player.takeDamage(10);
+                    }
+                });
+
+            } else if (gameState === "menu") {
+                ctx.fillStyle = "white";
+                ctx.font = "40px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("SIDE SCROLL BRAWLER", canvas.width/2, 150);
+                ctx.font = "24px Arial";
+                ctx.fillText("Press SPACE or ENTER to Start", canvas.width/2, 250);
+
+            } else if (gameState === "gameover") {
+                ctx.fillStyle = "red";
+                ctx.font = "50px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("GAME OVER", canvas.width/2, 180);
+                ctx.fillStyle = "white";
+                ctx.font = "28px Arial";
+                ctx.fillText(`Final Score: ${score}`, canvas.width/2, 240);
+                ctx.fillText("Press SPACE or ENTER to Return to Menu", canvas.width/2, 300);
+            }
+
+            updateUI();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ====================== 画像ロード ======================
+        playerSprite.src = "player_spritesheet.png"; // ← 実際のスプライトパスに変更してください
+
+        playerSprite.onload = () => {
+            gameLoop();
+        };
+
+        // スプライトがロードできなくてもゲームは動くように
+        playerSprite.onerror = () => {
+            console.warn("スプライト画像が読み込めませんでした。仮のグラフィックで動作します。");
+            gameLoop();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1 Minute Countdown Timer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .timer-container {
+            background: linear-gradient(145deg, black, black);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+        
+        .timer-title {
+            color: #ddd;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .progress-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .progress-ring__circle {
+            stroke: #00ffff;
+        }
+
+        .time {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5em;
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .dot-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+        }
+
+        .dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #00ff00;
+            transform: translate(-50%, -50%) translateY(-90px);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        button {
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: #000;
+            font-size: 1.2em;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .start-pause {
+            background-color: #00ff00;
+        }
+
+        .reset {
+            background-color: #00bfff;
+        }
+    </style>
+</head>
+<body>
+    <div class="timer-container">
+        <svg class="progress-ring" viewBox="0 0 100 100">
+            <circle class="progress-ring__circle" cx="50" cy="50" r="45" stroke-width="3" fill="none" transform="rotate(0 50 50)" />
+        </svg>
+        <div class="time">01:00</div>
+        <div class="dot-container">
+            <div class="dot"></div>
+        </div>
+    </div>
+    <div class="buttons">
+        <button class="start-pause">▶</button>
+        <button class="reset">↻</button>
+    </div>
+
+    <script>
+        const timerDuration = 60 * 1000; // 1 minute in ms
+        const circumference = 2 * Math.PI * 45;
+
+        const timeDisplay = document.querySelector('.time');
+        const circle = document.querySelector('.progress-ring__circle');
+        const dotContainer = document.querySelector('.dot-container');
+        const startPauseButton = document.querySelector('.start-pause');
+        const resetButton = document.querySelector('.reset');
+
+        let endTime;
+        let animationFrame;
+        let isRunning = false;
+
+        function formatTime(ms) {
+            const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+            const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+            const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+            return `${minutes}:${seconds}`;
+        }
+
+        function updateTimer() {
+            const now = Date.now();
+            const remainingMs = endTime - now;
+
+            if (remainingMs <= 0) {
+                timeDisplay.textContent = '00:00';
+                circle.style.strokeDasharray = `${0} ${circumference}`;
+                dotContainer.style.transform = `rotate(0deg)`;
+                cancelAnimationFrame(animationFrame);
+                isRunning = false;
+                startPauseButton.textContent = '▶';
+                return;
+            }
+
+            timeDisplay.textContent = formatTime(remainingMs);
+
+            const progress = remainingMs / timerDuration;
+            const dashLength = progress * circumference;
+            circle.style.strokeDasharray = `${dashLength} ${circumference - dashLength}`;
+            const angle = (1 - progress) * 360; // Start from 12 o'clock (0 degrees)
+            dotContainer.style.transform = `rotate(${angle}deg)`;
+
+            animationFrame = requestAnimationFrame(updateTimer);
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            endTime = Date.now() + timerDuration;
+            isRunning = true;
+            startPauseButton.textContent = '||';
+            animationFrame = requestAnimationFrame(updateTimer);
+        }
+
+        function pauseTimer() {
+            if (!isRunning) {
+                startTimer();
+            } else {
+                isRunning = false;
+                startPauseButton.textContent = '▶';
+                cancelAnimationFrame(animationFrame);
+            }
+        }
+
+        function resetTimer() {
+            isRunning = false;
+            startPauseButton.textContent = '▶';
+            cancelAnimationFrame(animationFrame);
+            timeDisplay.textContent = '01:00';
+            circle.style.strokeDasharray = `${circumference} 0`;
+            dotContainer.style.transform = `rotate(0deg)`;
+        }
+
+        startPauseButton.addEventListener('click', pauseTimer);
+        resetButton.addEventListener('click', resetTimer);
+    </script>
+</body>
+</html>

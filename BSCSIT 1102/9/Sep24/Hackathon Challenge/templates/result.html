@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cost Breakdown</title>
+</head>
+<body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
+    <h2>📊 Project Cost Breakdown</h2>
+    <p><strong>Initial Budget:</strong> ₱{{ "{:,.2f}".format(budget) }}</p>
+
+    <table border="1" style="margin: auto; border-collapse: collapse;">
+        <tr><th>Category</th><th>Cost</th></tr>
+        <tr><td>Labor</td><td>₱{{ "{:,.2f}".format(labor_cost) }}</td></tr>
+        <tr><td>Materials</td><td>₱{{ "{:,.2f}".format(material_cost) }}</td></tr>
+        <tr><td>Equipment</td><td>₱{{ "{:,.2f}".format(equipment_cost) }}</td></tr>
+        <tr><td>Contingency</td><td>₱{{ "{:,.2f}".format(contingency_cost) }}</td></tr>
+        <tr><th>Total Cost</th><th>₱{{ "{:,.2f}".format(total_cost) }}</th></tr>
+    </table>
+
+    {% if remaining_budget > 0 %}
+        <p style="color: green;">Remaining Budget: ₱{{ "{:,.2f}".format(remaining_budget) }}</p>
+    {% elif remaining_budget < 0 %}
+        <p style="color: red;">⚠️ Over Budget by: ₱{{ "{:,.2f}".format(abs(remaining_budget)) }}</p>
+    {% else %}
+        <p style="color: blue;">✅ Perfect allocation! No remaining budget.</p>
+    {% endif %}
+
+    <br>
+    <a href="/">🔄 Calculate Again</a>
+</body>
+</html>

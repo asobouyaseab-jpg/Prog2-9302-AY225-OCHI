@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multi-Tool Calculator</title>
+</head>
+<body>
+    <h1>🛠️ Multi-Tool Calculator</h1>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form action="/temperature" method="POST">
+        <h2>Temperature Converter</h2>
+        <label>Enter Celsius (°C):</label>
+        <input type="text" name="celsius" placeholder="e.g., 25"><br><br>
+        <label>Enter Fahrenheit (°F):</label>
+        <input type="text" name="fahrenheit" placeholder="e.g., 77"><br><br>
+        <input type="submit" value="Convert Temperatures">
+    </form>
+
+    <form action="/grades" method="POST">
+        <h2>Students with High Grades</h2>
+        <p>Click to see students with grades 85 or above.</p>
+        <input type="submit" value="Show High Grades">
+    </form>
+
+    <form action="/primes" method="POST">
+        <h2>Prime Number Generator</h2>
+        <label>Enter a number (N):</label>
+        <input type="text" name="N" placeholder="e.g., 50"><br><br>
+        <input type="submit" value="Generate Primes">
+    </form>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Navigator Properties</title>
+</head>
+<body>
+    <h3>Navigator Object Properties</h3>
+    <div id="output"></div>
+    <p>Set the variable to a different object and then try...</p>
+
+    <script>
+        let output = '';
+        for (let prop in navigator) {
+            output += prop + '<br>';
+        }
+        output += 'Exiting from the loop!';
+        document.getElementById('output').innerHTML = output;
+    </script>
+</body>
+</html>

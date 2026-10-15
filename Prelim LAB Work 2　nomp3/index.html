@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: center;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        #welcome {
+            margin-top: 40px;
+            padding: 20px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            background-color: #f0fff0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Attendance Tracker Login</h1>
+
+    <form id="loginForm">
+        <p>
+            <label>Username:<br>
+                <input type="text" id="username" required>
+            </label>
+        </p>
+        <p>
+            <label>Password:<br>
+                <input type="password" id="password" required>
+            </label>
+        </p>
+        <button type="submit">Login</button>
+    </form>
+
+    <div id="welcome" style="display:none;">
+        <h2>Login Successful!</h2>
+        <p>Username: <strong id="displayName"></strong></p>
+        <p>Login Time: <strong id="timestamp"></strong></p>
+        <p>Attendance record has been automatically downloaded.</p>
+    </div>
+
+    <!-- スクリプト読み込み -->
+    <script src="beep.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

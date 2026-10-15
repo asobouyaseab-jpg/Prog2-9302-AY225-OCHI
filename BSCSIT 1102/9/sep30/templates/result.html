@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Results</title>
+</head>
+<body>
+    <h1>📊 Results</h1>
+
+    {% if celsius is not none and fahrenheit is not none %}
+        <h2>Temperature Conversion</h2>
+        <p>{{ celsius }}°C = {{ "%.2f" | format(fahrenheit_result) }}°F</p>
+        <p>{{ fahrenheit }}°F = {{ "%.2f" | format(celsius_result) }}°C</p>
+    {% endif %}
+
+    {% if grades %}
+        <h2>Students with Grades 85 or Above</h2>
+        <table border="1">
+            <tr>
+                <th>Student</th>
+                <th>Grade</th>
+            </tr>
+            {% for student, grade in grades.items() %}
+                <tr>
+                    <td>{{ student }}</td>
+                    <td>{{ grade }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    {% if primes %}
+        <h2>Prime Numbers up to {{ N }}</h2>
+        <p>{{ primes | join(", ") }}</p>
+    {% endif %}
+
+    <p><a href="/">🔄 Try Again</a></p>
+</body>
+</html>

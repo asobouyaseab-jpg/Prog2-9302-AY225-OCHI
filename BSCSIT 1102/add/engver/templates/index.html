@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multi-Function Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        input, button {
+            margin: 10px;
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: grey;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: grey;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
+        h2 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Multi-Function Calculator</h1>
+
+        <!-- Temperature Conversion -->
+        <div class="section">
+            <h2>Temperature Conversion</h2>
+            <form method="POST" action="/temperature">
+                <label for="temperature">{{ input_label }}</label><br>
+                <input type="text" name="temperature" placeholder="Enter temperature"><br>
+                <button type="submit" name="convert">Convert</button>
+            </form>
+            <form method="POST" action="/">
+                <button type="submit" name="toggle">Change Unit ({{ input_label }} → {{ output_label }})</button>
+            </form>
+        </div>
+
+        <!-- Grades Filtering -->
+        <div class="section">
+            <h2>Grades Filtering (Above 85)</h2>
+            <form method="POST" action="/grades">
+                <button type="submit">Show Grades</button>
+            </form>
+        </div>
+
+        <!-- Prime Number Generation -->
+        <div class="section">
+            <h2>Prime Number Generator</h2>
+            <form method="POST" action="/primes">
+                <label for="N">Enter a number ≥ 2:</label><br>
+                <input type="text" name="N" placeholder="e.g., 100"><br>
+                <button type="submit">Generate Primes</button>
+            </form>
+        </div>
+
+        <!-- Error Message -->
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>

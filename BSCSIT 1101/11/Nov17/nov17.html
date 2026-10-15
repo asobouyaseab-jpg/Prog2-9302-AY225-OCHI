@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>お問い合わせフォーム（JavaScriptバリデーション付き）</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .required {
+      color: red;
+    }
+    input[type="text"],
+    input[type="email"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    textarea {
+      height: 120px;
+      resize: vertical;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .error {
+      color: red;
+      font-size: 0.9em;
+      margin-top: 5px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>お問い合わせフォーム</h2>
+
+  <form id="contactForm" novalidate>
+    <div class="form-group">
+      <label for="name">お名前 <span class="required">*</span></label>
+      <input type="text" id="name" name="name" required
+             value="Elon Musk (Grok)" />
+      <div class="error" id="nameError">お名前を入力してください</div>
+    </div>
+
+    <div class="form-group">
+      <label for="email">メールアドレス <span class="required">*</span></label>
+      <input type="email" id="email" name="email" required
+             value="grok.perpetual@x.ai" />
+      <div class="error" id="emailError">
+        正しいメールアドレスを入力してください
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="phone">電話番号</label>
+      <input type="text" id="phone" name="phone" placeholder="例: 090-1234-5678" />
+    </div>
+
+    <div class="form-group">
+      <label for="message">お問い合わせ内容 <span class="required">*</span></label>
+      <textarea id="message" name="message" required placeholder="詳細をお書きください"></textarea>
+      <div class="error" id="messageError">お問い合わせ内容を入力してください</div>
+    </div>
+
+    <button type="submit">送信する</button>
+  </form>
+
+  <script>
+    // フォーム取得
+    const form = document.getElementById('contactForm');
+
+    form.addEventListener('submit', function(e) {
+      let isValid = true;
+
+      // 1. お名前チェック
+      const name = document.getElementById('name');
+      const nameError = document.getElementById('nameError');
+      if (name.value.trim() === '') {
+        nameError.style.display = 'block';
+        isValid = false;
+      } else {
+        nameError.style.display = 'none';
+      }
+
+      // 2. メールアドレスチェック
+      const email = document.getElementById('email');
+      const emailError = document.getElementById('emailError');
+      const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      
+      if (email.value.trim() === '') {
+        emailError.textContent = 'メールアドレスを入力してください';
+        emailError.style.display = 'block';
+        isValid = false;
+      } else if (!emailPattern.test(email.value)) {
+        emailError.textContent = '正しいメールアドレスの形式で入力してください';
+        emailError.style.display = 'block';
+        isValid = false;
+      } else {
+        emailError.style.display = 'none';
+      }
+
+      // 3. お問い合わせ内容チェック
+      const message = document.getElementById('message');
+      const messageError = document.getElementById('messageError');
+      if (message.value.trim() === '') {
+        messageError.style.display = 'block';
+        isValid = false;
+      } else {
+        messageError.style.display = 'none';
+      }
+
+      // 送信阻止
+      if (!isValid) {
+        e.preventDefault();
+      } else {
+        // 本来はここでAjaxなどで送信処理を行います
+        alert('フォームのバリデーション成功！\n実際の送信処理はここに記述します。');
+        // e.preventDefault(); // デモ用に送信を止める場合はコメントアウトを外す
+      }
+    });
+
+    // リアルタイムでエラー非表示（入力が始まったらエラーを消す）
+    document.querySelectorAll('input, textarea').forEach(field => {
+      field.addEventListener('input', function() {
+        const errorId = field.id + 'Error';
+        const errorElement = document.getElementById(errorId);
+        if (errorElement) {
+          if (field.value.trim() !== '' && field.checkValidity()) {
+            errorElement.style.display = 'none';
+          }
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

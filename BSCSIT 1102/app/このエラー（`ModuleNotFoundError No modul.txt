@@ -1,0 +1,82 @@
+このエラー（`ModuleNotFoundError: No module named 'flask'`）は、Python環境にFlaskライブラリがインストールされていないために発生します。Flaskは標準ライブラリではなく、外部パッケージなので、別途インストールする必要があります。以下で解決方法をステップバイステップで説明します。Windows環境（パスからC:\Users\...）を想定して進めますが、他のOSでも基本は同じです。
+
+### 1. Python環境の確認
+- コマンドプロンプト（cmd）またはPowerShellを開きます（Windowsキー + R → `cmd` と入力）。
+- 以下のコマンドを実行してPythonとpipがインストールされているか確認：
+  ```
+  python --version
+  pip --version
+  ```
+  - Python 3.x（例: 3.8以上）が表示されればOK。pipも表示されるはずです。
+  - 表示されない場合、Pythonを公式サイト（https://www.python.org/downloads/）からインストールし、インストール時に「Add Python to PATH」をチェックしてください。
+
+### 2. Flaskのインストール
+- コマンドプロンプトで以下のコマンドを実行：
+  ```
+  pip install flask
+  ```
+  - これでFlaskがインストールされます。インストール中はインターネット接続が必要です。
+  - もしエラーが出る場合（例: pipが古い）：
+    ```
+    python -m pip install --upgrade pip
+    ```
+    然后もう一度 `pip install flask` を試してください。
+- 仮想環境を使っている場合（推奨: プロジェクトごとに環境を分けるため）：
+  - venvを作成：
+    ```
+    python -m venv myenv
+    ```
+  - アクティベート：
+    ```
+    myenv\Scripts\activate
+    ```
+  - インストール：
+    ```
+    pip install flask
+    ```
+  - スクリプト実行時はこの環境で実行（`deactivate` で終了）。
+
+### 3. スクリプトの実行
+- インストール後、コマンドプロンプトでスクリプトのディレクトリに移動：
+  ```
+  cd "C:\Users\asobo_jo8sn4\Documents\BSCSIT\BSCSIT 1102\Grade_Calculator"
+  ```
+- 実行：
+  ```
+  python Sep3test.py
+  ```
+- 成功すれば、`Running on http://127.0.0.1:5000` のようなメッセージが出ます。ブラウザで http://127.0.0.1:5000 を開いて確認してください。
+- debug=True なので、エラーが出たらコンソールに詳細が表示されます。
+
+### よくあるトラブルシューティング
+- **Permissionエラー**: 管理者権限でコマンドプロンプトを実行（右クリック → 「管理者として実行」）。
+- **Multiple Python versions**: `py -m pip install flask` を試す（WindowsのPython Launcher）。
+- **Anaconda/Minicondaを使っている場合**: Anaconda Promptを開き、`conda install flask` または `pip install flask` を使用。仮想環境（conda env）を作成するのもおすすめ：
+  ```
+  conda create -n grade_calc python=3.9
+  conda activate grade_calc
+  pip install flask
+  ```
+- **VS Codeを使っている場合**: 
+  - Python拡張機能をインストール。
+  - コマンドパレット（Ctrl+Shift+P）で「Python: Select Interpreter」を選択し、正しいPythonを選択。
+  - ターミナルでpip installを実行。
+- **インストール後もエラー**: `pip list` でFlaskがリストされているか確認。なければ再インストール。
+
+これでエラーが解決するはずです。コード自体に問題はなく（Grade CalculatorのシンプルなFlaskアプリ）、インストールだけが原因です。もしさらにエラーが出たら、具体的なエラーメッセージを教えてください！
+
+### 「注意: セッションを終了するたびに再アクティベートが必要です。」の意味について
+このメッセージは、あなたのクエリで指摘されたように、このFlaskエラーの解決策の一つに関連しています。おそらく**Anaconda**（またはMiniconda）環境を使っている場合の話です。AnacondaはPythonの科学計算向けディストリビューションで、仮想環境（environment）を管理します。
+
+- **意味の詳細**:
+  - **セッション**: Anacondaの「環境」や「ターミナル/プロンプトの接続状態」を指します。例えば、Anaconda PromptやJupyter Notebook、VS CodeのPythonインタープリタで作業する「一時的な実行環境」。
+  - **終了するたびに**: コマンドプロンプトを閉じる、Jupyterカーネルを再起動する、VS Codeを閉じて開き直す、仮想環境を`deactivate`するなどの操作でセッションが終了。
+  - **再アクティベートが必要です**: 環境を有効化（activate）し直さないと、インストールしたパッケージ（ここではFlask）が認識されない。Anacondaの仮想環境は、アクティベートしないと「base」環境やシステムPythonに戻り、プロジェクト固有のパッケージが使えなくなるためです。
+  
+  要するに、「環境をアクティベートした状態で作業を終了したら、次回は毎回アクティベートし直さないと、インストールしたFlaskなどのパッケージが使えませんよ」という警告。Anacondaのドキュメントやエラーメッセージでよく見られます。これはセキュリティと環境隔離のための設計です。
+
+- **このエラー解決との関連**:
+  - Anacondaを使っていると、Flaskインストール後も「セッション終了 → 再起動」で環境がリセットされ、ModuleNotFoundErrorが再発しやすい。
+  - **対処**: 毎回 `conda activate your_env_name` を実行。スクリプトの先頭に環境変数を設定したり、Anaconda Navigatorで環境を管理したりすると便利。永久解決には、システム全体にpip installするか、仮想環境をデフォルトに設定（`conda config --set auto_activate_base false` など）。
+
+Anacondaを使っていない場合、このメッセージは関係ない可能性が高いですが、Python環境の管理ツール（venv, conda）で共通の概念です。もしAnacondaの文脈でこのメッセージを見たなら、上記のインストール手順でconda activateを忘れずに！

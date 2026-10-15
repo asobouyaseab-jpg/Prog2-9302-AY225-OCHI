@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My First WebGL Program</title>
+    <style>
+        canvas { border: 1px solid black; }
+    </style>
+</head>
+<body>
+    <h1>My First WebGL Triangle</h1>
+    <canvas id="canvas" width="600" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("canvas");
+        const gl = canvas.getContext("webgl");
+        if (!gl) {
+            alert("WebGL is not supported.");
+        }
+
+        // 1. シェーダーのソースコード定義
+        // 頂点シェーダー (位置を決定する)
+        const vsSource = `
+            attribute vec2 position;
+            void main() {
+                gl_Position = vec4(position, 0.0, 1.0);
+            }
+        `;
+
+        // フラグメントシェーダー (色を決定する)
+        const fsSource = `
+            precision mediump float;
+            void main() {
+                gl_FragColor = vec4(0.6, 0.0, 1.0, 1.0); // 色の変更 (R, G, B, A)
+            }
+        `;
+
+        // シェーダーのコンパイル関数
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error(gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            return shader;
+        }
+
+        const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
+        const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+
+        // 2. プログラムの作成とリンク
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            console.error(gl.getProgramInfoLog(program));
+        }
+        gl.useProgram(program);
+
+        // 3. 頂点データの設定 (WebGLの座標系は中心が 0.0, 範囲は -1.0 から 1.0)
+        const vertices = new Float32Array([
+             0.0,  0.9,  // 上頂点
+            -0.9, -0.9,  // 左下頂点
+             0.9, -0.9   // 右下頂点
+        ]);
+
+        // バッファを作成してデータを転送
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+        // シェーダー内の変数（position）とバッファを結びつける
+        const position = gl.getAttribLocation(program, "position");
+        gl.enableVertexAttribArray(position);
+        gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+
+        // 4. 描画の実行
+        gl.clearColor(0.9, 0.9, 0.9, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // 三角形として3つの頂点を描画
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+    </script>
+</body>
+</html>

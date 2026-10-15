@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Side Scroll Brawler</title>
+    <style>
+        body { 
+            margin: 0; 
+            background: #000; 
+            font-family: Arial, sans-serif; 
+            overflow: hidden;
+        }
+        canvas { 
+            display: block; 
+            margin: 0 auto; 
+            image-rendering: pixelated; 
+        }
+        #ui { 
+            position: absolute; 
+            top: 15px; 
+            left: 15px; 
+            color: white; 
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none; 
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    
+    <div id="ui">
+        <div>HP: <span id="hp">100</span></div>
+        <div>Score: <span id="score">0</span></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // ====================== ゲーム状態 ======================
+        let gameState = "menu"; // "menu", "playing", "gameover"
+        let score = 0;
+
+        // ====================== 入力処理 ======================
+        const keys = {};
+        document.addEventListener("keydown", e => {
+            keys[e.key] = true;
+            if ((gameState === "menu" || gameState === "gameover") && (e.key === " " || e.key === "Enter")) {
+                if (gameState === "menu") startGame();
+                else resetGame();
+            }
+        });
+        document.addEventListener("keyup", e => keys[e.key] = false);
+
+        // ====================== Player Class ======================
+        class Player {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 50;
+                this.height = 80;
+                this.hp = 100;
+                this.maxHp = 100;
+                this.speed = 5;
+                this.facingRight = true;
+                this.state = "idle";
+                this.comboStep = 0;
+                this.attackCooldown = false;
+                this.frameCount = 0;
+                this.currentFrame = 0;
+                this.invulnerable = 0;
+            }
+
+            update(enemies) {
+                if (this.invulnerable > 0) this.invulnerable--;
+
+                let moving = false;
+                if (keys["ArrowRight"]) {
+                    this.x += this.speed;
+                    this.facingRight = true;
+                    this.state = "run";
+                    moving = true;
+                } else if (keys["ArrowLeft"]) {
+                    this.x -= this.speed;
+                    this.facingRight = false;
+                    this.state = "run";
+                    moving = true;
+                }
+
+                if (!moving && this.state !== "attack") this.state = "idle";
+
+                if (keys[" "] && !this.attackCooldown) {
+                    this.attack(enemies);
+                }
+
+                this.frameCount++;
+                if (this.frameCount % 8 === 0) {
+                    this.currentFrame = (this.currentFrame + 1) % this.getMaxFrames();
+                }
+
+                // 画面端制限（カメラが入る前は簡易）
+                if (this.x < 20) this.x = 20;
+            }
+
+            attack(enemies) {
+                this.state = "attack";
+                this.comboStep = (this.comboStep + 1) % 3;
+                this.attackCooldown = true;
+
+                const hitbox = {
+                    x: this.facingRight ? this.x + this.width - 10 : this.x - 40,
+                    y: this.y + 10,
+                    width: 55,
+                    height: this.height - 20
+                };
+
+                enemies.forEach(enemy => {
+                    if (this.checkCollision(hitbox, enemy)) {
+                        enemy.takeDamage(25);
+                    }
+                });
+
+                setTimeout(() => {
+                    this.attackCooldown = false;
+                    if (this.state === "attack") this.state = "idle";
+                }, 280);
+            }
+
+            takeDamage(amount) {
+                if (this.invulnerable > 0) return;
+                this.hp -= amount;
+                this.invulnerable = 40;
+
+                if (this.hp <= 0) {
+                    this.hp = 0;
+                    gameState = "gameover";
+                }
+            }
+
+            getMaxFrames() {
+                if (this.state === "idle") return 4;
+                if (this.state === "run") return 6;
+                if (this.state === "attack") return 5;
+                return 1;
+            }
+
+            checkCollision(a, b) {
+                return a.x < b.x + b.width &&
+                       a.x + a.width > b.x &&
+                       a.y < b.y + b.height &&
+                       a.y + a.height > b.y;
+            }
+
+            draw() {
+                // スプライト未対応時は仮のキャラ描画
+                ctx.save();
+                if (!this.facingRight) {
+                    ctx.translate(this.x + this.width, this.y);
+                    ctx.scale(-1, 1);
+                    ctx.fillStyle = this.invulnerable > 0 ? "#aaffff" : "#4488ff";
+                    ctx.fillRect(0, 0, this.width, this.height);
+                } else {
+                    ctx.fillStyle = this.invulnerable > 0 ? "#aaffff" : "#4488ff";
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                }
+                ctx.restore();
+
+                // 簡単な頭（目）
+                ctx.fillStyle = "white";
+                const eyeX = this.facingRight ? this.x + 35 : this.x + 10;
+                ctx.fillRect(eyeX, this.y + 25, 8, 8);
+            }
+        }
+
+        // ====================== Enemy Class ======================
+        class Enemy {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 50;
+                this.height = 80;
+                this.hp = 50;
+                this.speed = 1.8;
+            }
+
+            update(player) {
+                if (this.x > player.x + 50) this.x -= this.speed;
+                else if (this.x < player.x - 50) this.x += this.speed;
+            }
+
+            takeDamage(amount) {
+                this.hp -= amount;
+            }
+
+            isDead() {
+                return this.hp <= 0;
+            }
+
+            draw() {
+                ctx.fillStyle = "#cc2222";
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+
+                // 敵の目
+                ctx.fillStyle = "yellow";
+                ctx.fillRect(this.x + 15, this.y + 25, 8, 8);
+                ctx.fillRect(this.x + 30, this.y + 25, 8, 8);
+
+                // HPバー
+                const barWidth = (this.hp / 50) * this.width;
+                ctx.fillStyle = this.hp > 20 ? "#ffdd44" : "#ff4444";
+                ctx.fillRect(this.x, this.y - 12, barWidth, 6);
+            }
+        }
+
+        // ====================== 背景関連 ======================
+        let bgX = 0; // 背景スクロール用（カメラの準備）
+
+        function drawBackground() {
+            // ====================== ゲーム定数 ======================
+           const GROUND_Y = 300;   // ← 地面のY座標を定数化（これが基準！）
+
+            // 空（グラデーション風）
+            const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+            gradient.addColorStop(0, "#1e3a8a");
+            gradient.addColorStop(1, "#3b82f6");
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, 280);
+
+            // 遠景の山や雲（シンプルな三角と長方形）
+            ctx.fillStyle = "#1e40af";
+            ctx.fillRect(0, 180, canvas.width, 100); // 遠い山
+            ctx.beginPath();
+            ctx.moveTo(100 + bgX*0.2, 180);
+            ctx.lineTo(250 + bgX*0.2, 100);
+            ctx.lineTo(400 + bgX*0.2, 180);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(500 + bgX*0.2, 180);
+            ctx.lineTo(650 + bgX*0.2, 120);
+            ctx.lineTo(800 + bgX*0.2, 180);
+            ctx.fill();
+
+            // 中景の木や建物（簡易）
+            ctx.fillStyle = "#166534";
+            ctx.fillRect(150 + bgX*0.5, 220, 60, 80);
+            ctx.fillRect(550 + bgX*0.5, 200, 80, 100);
+
+            // 地面
+            ctx.fillStyle = "#4d4038";
+            ctx.fillRect(0, 300, canvas.width, canvas.height - 300);
+
+            // 地面の草やライン
+            ctx.fillStyle = "#166534";
+            ctx.fillRect(0, 300, canvas.width, 20);
+        }
+
+        // ====================== ゲームオブジェクト ======================
+        let player;
+        let enemies = [];
+
+        function initGame() {
+            player = new Player(120, 220);
+            enemies = [
+                new Enemy(550, 220),
+                new Enemy(750, 220)
+            ];
+            score = 0;
+            bgX = 0;
+        }
+
+        function startGame() {
+            gameState = "playing";
+            initGame();
+        }
+
+        function resetGame() {
+            gameState = "menu";
+        }
+
+        function updateUI() {
+            document.getElementById("hp").textContent = player ? Math.max(0, player.hp) : 100;
+            document.getElementById("score").textContent = score;
+        }
+
+        // ====================== メインループ ======================
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawBackground();
+
+            if (gameState === "playing") {
+                player.update(enemies);
+
+                // 敵更新 & 死亡処理
+                for (let i = enemies.length - 1; i >= 0; i--) {
+                    enemies[i].update(player);
+                    if (enemies[i].isDead()) {
+                        enemies.splice(i, 1);
+                        score += 100;
+                    }
+                }
+
+                // 敵の追加（簡易）
+                if (enemies.length < 3 && Math.random() < 0.02) {
+                    enemies.push(new Enemy(canvas.width + 30, 220));
+                }
+
+                // 描画
+                player.draw();
+                enemies.forEach(enemy => enemy.draw());
+
+                // プレイヤーと敵の接触判定
+                enemies.forEach(enemy => {
+                    if (player.checkCollision(player, enemy)) {
+                        player.takeDamage(8);
+                    }
+                });
+
+            } else if (gameState === "menu") {
+                ctx.fillStyle = "rgba(255,255,255,0.9)";
+                ctx.font = "bold 42px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("SIDE SCROLL BRAWLER", canvas.width/2, 140);
+                
+                ctx.font = "24px Arial";
+                ctx.fillText("Press SPACE or ENTER to Start", canvas.width/2, 240);
+
+            } else if (gameState === "gameover") {
+                ctx.fillStyle = "rgba(200,0,0,0.95)";
+                ctx.font = "bold 52px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("GAME OVER", canvas.width/2, 170);
+                
+                ctx.fillStyle = "white";
+                ctx.font = "28px Arial";
+                ctx.fillText(`Score: ${score}`, canvas.width/2, 230);
+                ctx.fillText("Press SPACE or ENTER to Menu", canvas.width/2, 280);
+            }
+
+            updateUI();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ゲーム開始
+        gameLoop();
+    </script>
+</body>
+</html>

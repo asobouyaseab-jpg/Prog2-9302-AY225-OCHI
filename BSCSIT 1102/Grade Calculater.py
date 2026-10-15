@@ -1,0 +1,102 @@
+from flask import Flask, render_template_string, request
+
+app = Flask(__name__)
+
+# HTMLテンプレートをPythonの文字列変数として定義（これで適用可能）
+html_template = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grade Calculater</title>
+    <style>
+        body {font-family: Arial; text-align: center; margin-top: 50px;}
+        .error {color: red;}
+        .success {color: green;}
+        .result {margin-top: 20px; padding: 10px; border: 1px solid #ccc;}
+    </style>
+</head>
+<body>
+    <h1>Grade Calculater</h1>
+    <form method="POST">
+        <input type="number" name="prelim_grade" placeholder="Enter Preliminary Grade(0-100)" step="0.01" required><br><br>
+        <input type="number" name="absences" placeholder="Enter Number of Absences" step="1" required><br><br>
+        <button type="submit">Calculate</button>
+    </form>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if result is not none %}
+        <div class="result">
+            <h2>Results: {{ result.prelim_grade }}</h2>
+            <p>Preliminary Grade: {{ result.prelim_grade }}</p>
+            <p>Absences: {{ result.absences }}</p>
+            <p>Status: 
+                {% if result.passed %}
+                    <span class="success">Passed</span>
+                {% else %}
+                    <span class="error">Failed</span>
+                {% endif %}
+            </p>
+            <h3>Required Grades</h3>
+            <p>To Pass (75%): Need {{ result.required_final_pass }} in Final</p>
+            <p>For Dean's List (90%): Need {{ result.required_final_deans }} in Final</p>
+        </div>
+    {% endif %}
+</body>
+</html>
+"""
+
+@app.route("/", methods=["GET", "POST"])
+def grade_calculater():
+     error = None
+     result = None
+
+     if request.method == "POST":
+        try:
+           #get and validate inputs
+           prelim_grade = request.form.get("prelim_grade", type=float)
+           absences = request.form.get("absences", type=int)
+    
+           if prelim_grade <0 or prelim_grade>100:
+            error = "Preliminary grade must be between 0 and 100"
+           elif absences <0:
+            error="Absences cannnot be negative"
+           else:
+               #Calculate status and required grades
+               #Assuming equal weight for prelim ,midterm,and final(1/3each)
+               current_toal = prelim_grade /3
+               required_toal_pass = 75 - current_toal #For passing(75%)
+               required_toal_deans = 90 - current_toal #For Dean`s list(90%)
+
+               #Calculate required midtern and final grades
+               required_midterm_pass = required_toal_pass*1.5
+               required_final_pass = required_toal_pass*1.5
+               required_midterm_deans = required_toal_deans*1.5
+               required_final_deans = required_toal_deans*1.5
+
+               required_midterm_pass = (max(required_midterm_pass,0,100))
+               required_final_pass = (max(required_final_pass,0,100))
+               required_midterm_deans = (max(required_midterm_deans,0,100))
+               required_final_deans = (max(required_midterm_deans,0,100))
+
+               #Create result dictionary
+               result = {
+                   'prelim_grade': round(prelim_grade, 2),
+                   'absences': absences,
+                   'passed': prelim_grade>=75 and absences <=3, #Assuming max 3 absences allowed
+                   'deans_list': prelim_grade>=90 and absences <=0,
+                   'required_midterm_pass': round(required_midterm_pass,2),
+                   'required_midterm_deans': round(required_midterm_deans,2),
+                   'required_final_pass': round(required_final_pass,2),
+                   'required_final_deans': round(required_final_deans,2),
+            }
+        except(ValueError, TypeError): 
+           error = "Please enter valid numbers"
+
+     return render_template_string(html_template, error=error, result=result)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

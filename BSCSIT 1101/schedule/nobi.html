@@ -1,0 +1,66 @@
+<DOCTYPE html>
+<html>
+<head>
+<style>
+    .nav {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333;
+    }
+    
+    .nav li {
+      float: left;
+    }
+
+    .nav li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    .nav li a:hover {
+      background-color: #111;
+    }
+  </style>
+       <title>CSS Animaation</title>
+    <style>
+             .box{
+                background-color: rebeccapurple;
+                border-radius: 10px;
+                width: 250px;
+                height: 250px;
+                text-align: center;
+
+                margin: 0% 0 0 0%;
+                padding: 10px;
+                color: white;
+             }
+             .box:hover {
+                animation-name: rotate;
+                animation-duration: 0.7s;
+                animation-delay: 2s;
+             }
+             @keyframes rotate{
+                0% {
+                transform: rotate(0);
+             }
+             100%{ 
+                transform: rotate(-360deg);
+            }
+        }
+    </style>
+</head>
+  <body>  
+        <ul class="nav">
+        <li><a class="active" href="#home">Home</a></li>
+        <li><a href="#news">News</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="#about">About</a></li>
+    </ul>
+<div class="box">Nobutoshi</div>
+    </body>
+</html>

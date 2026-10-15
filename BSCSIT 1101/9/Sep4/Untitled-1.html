@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexbox Example</title>
+    <style>
+        .flex-container {
+            display: flex;
+            justify-content: space-between;
+            background-color: #e0f7fa;
+            padding: 20px;
+            border: 2px solid #0097a7;
+            margin: 20px auto;
+        }
+        .flex-item {
+            display: flex;
+            background-color: #0097a7;
+            color: white;
+            width: 100px;
+            height: 100px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+        .controls {
+            display: flex; /* Use flexbox for controls */
+            justify-content: flex-start; /* Align buttons to the start with spacing */
+            gap: 10px; /* Space between buttons */
+            margin: 10px 0;
+        }
+        .controls button {
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #00a8a8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .controls button:hover {
+            background-color: #008080;
+        }
+    </style>
+</head>
+<body>
+    <h2>2. Flexbox</h2>
+    <div class="sample">
+        <button>Justify Center</button>
+        <button>Space Between</button>
+        <button>Align Right</button>
+    </div>
+    <div class="flex-container">
+        <div class="flex-item">Flex Item 1</div>
+        <div class="flex-item">Flex Item 2</div>
+        <div class="flex-item">Flex Item 3</div>
+    </div>
+</body>
+</html>

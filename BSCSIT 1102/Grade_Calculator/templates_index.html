@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grade Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            display: inline-block;
+        }
+        input, button {
+            margin: 5px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Grade Calculator</h1>
+    <form method="POST">
+        <input type="number" name="prelim_grade" placeholder="Enter Preliminary Grade (0-100)" step="0.01" required>
+        <input type="number" name="absences" placeholder="Enter Number of Absences" step="1" required>
+        <button type="submit">Calculate</button>
+    </form>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if result %}
+        <div class="result">
+            <h2>Results</h2>
+            <p>Preliminary Grade: {{ result.prelim_grade }}</p>
+            <p>Absences: {{ result.absences }}</p>
+            <p>Status: 
+                {% if result.passed %}
+                    <span class="success">Passed</span>
+                {% else %}
+                    <span class="error">Failed</span>
+                {% endif %}
+            </p>
+            <h3>Required Grades</h3>
+            <p>To Pass (75%): Need {{ result.required_midterm_pass }} in Midterm, {{ result.required_final_pass }} in Final</p>
+            <p>For Dean's List (90%): Need {{ result.required_midterm_deans }} in Midterm, {{ result.required_final_deans }} in Final</p>
+        </div>
+    {% endif %}
+</body>
+</html>

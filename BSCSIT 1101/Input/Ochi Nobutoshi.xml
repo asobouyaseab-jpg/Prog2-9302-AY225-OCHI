@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<INTRODUCE_INFOMATION>
+  <STUDENT_INFOMATION>
+    <NAME>NOBUTOSHI OCHI</NAME>
+    <COURSE>BSIT</COURSE>
+    <YEAR>1st</YEAR>
+    <SCHOOL>University of Perpetual Help Molino Campus</SCHOOL>
+  </STUDENT_INFOMATION>
+  <PERSONAL_INFOMATION>
+    <BIRTHDAY>Feb.8</BIRTHDAY>
+    <BIRTHPLACE>HIROSHIMA CITY</BIRTHPLACE>
+    <AGE>37</AGE>
+    <FRIENDS>
+      <F1>Takechi</F1>
+      <F2>Okimoto</F2>
+      <F3>Hanabusa</F3>
+    </FRIENDS>
+  </PERSONAL_INFOMATION>
+</INTRODUCE_INFOMATION>

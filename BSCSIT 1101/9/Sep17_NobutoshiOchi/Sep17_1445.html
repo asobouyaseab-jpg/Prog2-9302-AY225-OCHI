@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+ <head>
+        <title>my activity</title>
+        <style>
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+                margin: 20px;
+                background: #f4f4f4;
+            }
+
+            h1 {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            #my-activities {
+                display: grid;
+                min-height: 100px;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap:  20px;
+                padding: 10px
+            }
+            
+            .activity {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                border: 1px solid #ccc;
+                padding:  15px;
+                border-radius: 8px;
+                background: white;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 1);
+                transition: transform 0.2s ease-in-out;
+                height: 100%; /*Make all cards equal in grid */
+            }
+
+            .activity:hover{
+                transform: translateY(-5px);
+            }
+
+            .activity h2 {
+                margin-top: 0;
+                font-size: 1.2em;
+                color: #333;
+            }
+
+            .activity img {
+                width: 100%;
+                height: 50px;
+                object-fit: cover;
+                border-radius: 6px;
+                margin-top: 10px;
+            }
+
+            .activity p {
+                margin: 5px 0;
+            }
+
+            .activity .description {
+                flex-grow: 1;
+                margin-bottom: 10px;
+            }
+        </style>
+        <style>  
+            #navbar.nav {
+               list-style-type: none;
+               margin: 0;
+               padding: 0;
+               overflow: hidden;
+               background-color: #333;
+           }
+    
+            #navbar.nav li {
+               float: left;
+           }
+
+            #navbar.nav li a {
+               display: block;
+               color: white;
+               text-align: center;
+               padding: 14px 16px;
+               text-decoration: none;
+           }
+
+            #navbar.nav li a:hover {
+                background-color: #111;
+           }
+
+         </style>
+ </head>
+ <body>
+     <div id="menu">
+     <ul id="navbar" class="nav">
+        <li><a class="active" href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#activities">Activities</a></li>
+        <li><a href="#contact">Contact</a></li>
+     </ul>
+     </div>
+
+        <h1>My Activities</h1>
+        <div id="my-activities"></div>
+
+     <script>
+        //lord external XML file
+        fetch("activities.xml")
+        .then(response => response.text())
+        .then(str => {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(str, "application/xml");
+
+            const students = xmlDoc.getElementsByTagName("student");
+            const container = document.getElementById("my-activities");
+
+            for (let i = 0; i < students.length; i++) {
+                 const student = students[i];
+                 const title = student.getElementsByTagName("title") [0].textContent.trim();
+                 const date = student.getElementsByTagName("date") [0].textContent.trim();
+                 const description = student.getElementsByTagName("description") [0].textContent.trim();
+                 const image = student.getElementsByTagName("image") [0].textContent.trim();
+                 const activityDiv = document.createElement("div");
+                 activityDiv.classList.add("activity");
+            
+                 activityDiv.innerHTML = `
+                  <h2>${title}</h2> 
+                  <p><strong>Date:</strong> ${date}</p>
+                  <p class = "description"><strong>Description:</strong>&nbsp;
+                    ${description}</p>
+                  <p class="lead" style="font-weight:bold,">Image: </p><img
+                  src="${image}" alt="${title}">
+                    `;
+
+                container.appendChild(activityDiv);
+                    }
+                })
+                .catch(err => console.error("Error loading XML:", err));
+    </script>
+    </body>
+</html>

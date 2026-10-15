@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    h2 { text-align: center; }
+    .form-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .form-group {
+      flex: 1;
+      min-width: 280px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    .required { color: red; }
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    textarea {
+      width: 100%;
+      height: 140px;
+      padding: 10px 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    .button-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 40px;
+    }  
+    button {
+      display: block;
+      width: 80px;
+      padding: 14px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { background: #0052a3; }
+    .error {
+      color: #d32f2f;
+      font-size: 0.9em;
+      margin-top: 5px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header-text">
+    <h1>Contact Form</h1>
+    <p>
+      Contact us about anything related to our company or services.<br>
+      We'll do our best to get back to you as soon as possible.
+    </p>
+  </div>
+
+  <form id="contactForm" novalidate>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="name">Name <span class="required">*</span></label>
+        <input type="text" id="name" name="name" required value="Nobutoshi Ochi" />
+        <div class="error" id="nameError">Input your name</div>
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone" placeholder="Example: 090-1234-5678" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="email">Email <span class="required">*</span></label>
+        <input type="email" id="email" name="email" required value="asobouyaseab@gmail.com" />
+        <div class="error" id="emailError">Input your email address</div>
+      </div>
+      <div class="form-group">
+        <label for="company">Company</label>
+        <input type="text" id="company" name="company" placeholder="Example: Company" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group" style="flex: 100%;">
+        <label for="subject">Subject <span class="required">*</span></label>
+        <input type="text" id="subject" name="subject" required placeholder="Example: Question about Company" />
+        <div class="error" id="subjectError">input the subject</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group" style="flex: 100%;">
+        <label for="message">Question <span class="required">*</span></label>
+        <textarea id="message" name="message" required placeholder="Please enter your message or inquiry below."></textarea>
+        <div class="error" id="messageError">Input your Question</div>
+      </div>
+    </div>
+
+   <div class="button-container">
+   <button type="submit">Submit</button>
+   </div>
+  </form>
+
+  <script>
+    const form = document.getElementById('contactForm');
+
+    form.addEventListener('submit', function(e) {
+      let isValid = true;
+
+      // お名前
+      const name = document.getElementById('name');
+      if (name.value.trim() === '') {
+        document.getElementById('nameError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('nameError').style.display = 'none';
+      }
+
+      // メールアドレス
+      const email = document.getElementById('email');
+      const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (email.value.trim() === '') {
+        document.getElementById('emailError').textContent = 'Input your email address';
+        document.getElementById('emailError').style.display = 'block';
+        isValid = false;
+      } else if (!emailPattern.test(email.value)) {
+        document.getElementById('emailError').textContent = 'Input a valid email address';
+        document.getElementById('emailError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('emailError').style.display = 'none';
+      }
+
+      // 件名
+      const subject = document.getElementById('subject');
+      if (subject.value.trim() === '') {
+        document.getElementById('subjectError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('subjectError').style.display = 'none';
+      }
+
+      // お問い合わせ内容
+      const message = document.getElementById('message');
+      if (message.value.trim() === '') {
+        document.getElementById('messageError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('messageError').style.display = 'none';
+      }
+
+      if (!isValid) {
+        e.preventDefault();
+      } else {
+        alert('Complete!\nsubmit process goes here.');
+        // e.preventDefault(); // テスト中はコメントアウト推奨
+      }
+    });
+
+    // 入力中にエラーメッセージを消す
+    document.querySelectorAll('input, textarea').forEach(field => {
+      field.addEventListener('input', function() {
+        const error = document.getElementById(field.id + 'Error');
+        if (error && field.value.trim() !== '' && field.checkValidity()) {
+          error.style.display = 'none';
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
