@@ -1,4 +1,4 @@
-const connectToDatabase = require('./db.js'); // さっき作ったdb.jsを読み込んで使えるようにする
+const connectToDatabase = require('../db.js');  // さっき作ったdb.jsを読み込んで使えるようにする
 const mongoose = require('mongoose');
 
 // 1. データベースに保存するデータの「形」を決める設計図
