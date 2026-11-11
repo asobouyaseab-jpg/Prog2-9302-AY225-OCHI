@@ -14,6 +14,7 @@ async function connectToDatabase() {
   if (!cached.promise) {
     // 新しくMongoDBへの接続を開始する
     cached.promise = mongoose.connect(process.env.MONGODB_URI, {
+      dbName: 'LabAttendanceDB',
       bufferCommands: false, // 接続が完了する前に命令を実行してエラーになるのを防ぐ安全の為の設定
     });
   }

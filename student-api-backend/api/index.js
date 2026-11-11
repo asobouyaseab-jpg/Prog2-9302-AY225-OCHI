@@ -1,47 +1,78 @@
-const connectToDatabase = require('../db'); // さっき作ったdb.jsを読み込んで使えるようにする
+const connectToDatabase = require('../db'); // 1つ上の階層にあるdb.jsを読み込む
 const mongoose = require('mongoose');
 
-// 1. データベースに保存するデータの「形」を決める設計図
-const RecordSchema = new mongoose.Schema({
-  title: String,   // タイトル（文字列）
-  content: String  // 内容（文字列）
-}, { timestamps: true }); // 自動で「作成日時」と「更新日時」を記録する機能
+// 1. 出席データ用の「形」を決める設計図（課題指定の4項目）
+const AttendanceSchema = new mongoose.Schema({
+  date: { type: String, required: true },        // 日付 (例: "2026-11-12")
+  subjectName: { type: String, required: true }, // 科目名 (例: "Database Systems")
+  section: { type: String, required: true },     // セクション (例: "BSIT-3A")
+  studentName: { type: String, required: true }  // 学生名 (例: "Taro Yamada")
+}, { timestamps: true });
 
-// 2. 設計図を元に、データを操作するための「Record」という名前のロボット（モデル）を作る
-const Record = mongoose.models.Record || mongoose.model('Record', RecordSchema);
+// 2. 設計図を元に、データを操作するための「Attendance」モデルを作る
+const Attendance = mongoose.models.Attendance || mongoose.model('Attendance', AttendanceSchema);
 
 module.exports = async (req, res) => {
-
-      res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');   // 全てのウェブサイトからの通信を許可する
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); // 許可する通信の種類
+  // CORS設定（GET, POST, PUT, DELETE すべてを許可するように拡張）
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // ブラウザが最初に行う「通信して大丈夫？」という事前確認（OPTIONS）に対する返答
+  // ブラウザの事前確認（OPTIONS）への返答
   if (req.method === 'OPTIONS') {
-    return res.status(200).end(); // 「大丈夫だよ」とだけ返す
+    return res.status(200).end();
   }
 
-    try {
-    await connectToDatabase(); // まず、さっきのdb.jsを呼び出してデータベースに繋ぐ
+  try {
+    await connectToDatabase(); // データベースに接続
 
-        if (req.method === 'GET') {
-      // データベースからすべてのデータを検索（find）し、作成日時が新しい順（createdAt: -1）に並び替える
-      const records = await Record.find({}).sort({ createdAt: -1 });
-      return res.status(200).json(records); // 取得したデータを画面に送る
+    // 【Read: 読込】すべての出席記録を取得する
+    if (req.method === 'GET') {
+      const records = await Attendance.find({}).sort({ createdAt: -1 });
+      return res.status(200).json(records);
     }
 
-        if (req.method === 'POST') {
-      // 画面から送られてきたデータ（req.body）をそのままデータベースに保存（create）する
-      const newRecord = await Record.create(req.body);
-      return res.status(201).json(newRecord); // 保存完了したデータを画面に「成功したよ」と送る
+    // 【Create: 作成】新しい出席記録を追加する
+    if (req.method === 'POST') {
+      const newRecord = await Attendance.create(req.body);
+      return res.status(201).json(newRecord);
     }
 
-        // GETでもPOSTでもない怪しい通信が来たらエラーにする
+    // 【Update: 更新】既存の出席記録を編集する（URLの ?id=... で対象を指定）
+    if (req.method === 'PUT') {
+      const { id } = req.query;
+      if (!id) {
+        return res.status(400).json({ error: '更新するデータのIDが必要です' });
+      }
+      const updatedRecord = await Attendance.findByIdAndUpdate(id, req.body, {
+        new: true, // 更新後の新しいデータを返す設定
+        runValidators: true
+      });
+      if (!updatedRecord) {
+        return res.status(404).json({ error: '指定されたデータが見つかりません' });
+      }
+      return res.status(200).json(updatedRecord);
+    }
+
+    // 【Delete: 削除】誤った・重複した出席記録を削除する（URLの ?id=... で対象を指定）
+    if (req.method === 'DELETE') {
+      const { id } = req.query;
+      if (!id) {
+        return res.status(400).json({ error: '削除するデータのIDが必要です' });
+      }
+      const deletedRecord = await Attendance.findByIdAndDelete(id);
+      if (!deletedRecord) {
+        return res.status(404).json({ error: '指定されたデータが見つかりません' });
+      }
+      return res.status(200).json({ message: '削除に成功しました', id });
+    }
+
+    // 上記以外の通信メソッドが来た場合
     return res.status(405).json({ error: 'Method Not Allowed' });
+
   } catch (error) {
-    console.error(error); // エラー内容をログに記録
-    // データベース接続失敗などの重大なエラーは「500」を返す
-    return res.status(500).json({ error: 'Database connection failed' });
+    console.error(error);
+    return res.status(500).json({ error: 'サーバーまたはデータベースのエラーが発生しました' });
   }
 };
